@@ -15,29 +15,59 @@ const {
  *     Todo:
  *       type: object
  *       required:
+ *         - syncId
  *         - title
  *       properties:
- *         _id:
+ *         syncId:
  *           type: string
- *           description: The auto-generated id of the todo (UUID)
+ *           description: Client-generated unique identifier (UUID v4 recommended)
  *         title:
  *           type: string
  *           description: The title of the todo
- *         completed:
- *           type: boolean
- *           description: The status of the todo
- *         deletedAt:
+ *         description:
  *           type: string
- *           format: date-time
- *           description: Timestamp of soft deletion
+ *           description: Optional description of the todo
+ *         isCompleted:
+ *           type: boolean
+ *           description: Whether the todo is completed
+ *           default: false
+ *         isDeleted:
+ *           type: boolean
+ *           description: Soft deletion flag (tombstone)
+ *           default: false
  *         createdAt:
  *           type: string
  *           format: date-time
+ *           description: Timestamp when the todo was created
  *         updatedAt:
  *           type: string
  *           format: date-time
+ *           description: Timestamp when the todo was last updated
  *         version:
  *           type: number
+ *           description: Version number for conflict resolution
+ *           default: 1
+ *     TodoCreate:
+ *       type: object
+ *       required:
+ *         - syncId
+ *         - title
+ *       properties:
+ *         syncId:
+ *           type: string
+ *           description: Client-generated unique identifier (UUID v4)
+ *           example: "550e8400-e29b-41d4-a716-446655440000"
+ *         title:
+ *           type: string
+ *           description: The title of the todo
+ *           example: "Buy groceries"
+ *         description:
+ *           type: string
+ *           description: Optional description
+ *           example: "Milk, eggs, bread"
+ *         isCompleted:
+ *           type: boolean
+ *           default: false
  */
 
 /**
@@ -70,7 +100,7 @@ const {
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/Todo'
+ *             $ref: '#/components/schemas/TodoCreate'
  *     responses:
  *       201:
  *         description: The created todo
@@ -110,17 +140,17 @@ const {
 
 /**
  * @swagger
- * /todos/{id}:
+ * /todos/{syncId}:
  *   patch:
  *     summary: Update a todo
  *     tags: [Todos]
  *     parameters:
  *       - in: path
- *         name: id
+ *         name: syncId
  *         schema:
  *           type: string
  *         required: true
- *         description: The todo id
+ *         description: The client-generated sync identifier (UUID)
  *     requestBody:
  *       required: true
  *       content:
@@ -139,11 +169,11 @@ const {
  *     tags: [Todos]
  *     parameters:
  *       - in: path
- *         name: id
+ *         name: syncId
  *         schema:
  *           type: string
  *         required: true
- *         description: The todo id
+ *         description: The client-generated sync identifier (UUID)
  *     responses:
  *       200:
  *         description: The todo was deleted
@@ -152,7 +182,7 @@ const {
 router.get('/', getTodos);
 router.get('/sync', syncTodos);
 router.post('/', createTodo);
-router.patch('/:id', updateTodo);
-router.delete('/:id', deleteTodo);
+router.patch('/:syncId', updateTodo);
+router.delete('/:syncId', deleteTodo);
 
 module.exports = router;
